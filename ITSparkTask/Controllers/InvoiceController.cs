@@ -3,10 +3,12 @@ using ITSpark.BLL.IRepository;
 using ITSpark.BLL.Specification;
 using ITSpark.DAL.Models;
 using ITSparkTask.PL.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ITSparkTask.PL.Controllers
 {
+    [Authorize]
     public class InvoiceController : Controller
     {
         private readonly IUnitOfWork unitOfWork;

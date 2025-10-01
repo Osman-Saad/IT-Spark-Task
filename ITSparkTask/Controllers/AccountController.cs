@@ -68,7 +68,7 @@ namespace ITSparkTask.PL.Controllers
             }
             var result = await signInManager.PasswordSignInAsync(user, loginVM.Password,loginVM.RemmberMe,false);
             if (result.Succeeded)
-                return RedirectToAction(actionName: "Index", controllerName: "Home");
+                return RedirectToAction(actionName: "Index", controllerName: "Invoice");
             else
                 ModelState.AddModelError(string.Empty, "Invalid email or password.");
             return View(loginVM);
