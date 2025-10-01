@@ -1,0 +1,159 @@
+﻿@model InvoiceViewModel
+@{
+    var invoiceTypes = new SelectList(ViewBag.InvoiceTypes);
+    ViewData["Title"] = "Update Invoice";
+}
+
+<h2>Update Invoice</h2>
+
+<form id="invoiceForm" method="post" asp-action="Update">
+    <div asp-validation-summary="All"></div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label class="form-label">Date</label>
+            <input class="form-control" asp-for="Date" type="date" />
+            <span asp-validation-for="Date" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Invoice Type</label>
+            <select class="form-select" asp-for="Type" asp-items="invoiceTypes">
+                <option value="">---- Select ----</option>
+            </select>
+            <span asp-validation-for="Type" class="text-danger"></span>
+        </div>
+    </div>
+
+    <hr />
+
+    <h4>Add Invoice Item</h4>
+    <div class="row mb-2 g-2 align-items-end">
+        <div class="col-md-4">
+            <label class="col-form-label">Name</label>
+            <input class="form-control" id="itemName" placeholder="Item Name" />
+        </div>
+        <div class="col-md-3">
+            <label class="col-form-label">Quantity</label>
+            <input class="form-control" id="itemQuantity" type="number" placeholder="Quantity" />
+        </div>
+        <div class="col-md-3">
+            <label class="col-form-label">Unit Price</label>
+            <input class="form-control" id="itemPrice" type="number" step="0.01" placeholder="Unit Price" />
+        </div>
+        <div class="col-md-2 d-flex">
+            <button type="button" class="btn btn-success flex-fill" id="addItemBtn">Add Item</button>
+        </div>
+    </div>
+
+    <hr />
+
+    <table class="table table-bordered" id="itemsTable">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Total</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Items.Count; i++)
+            {
+                var item = Model.Items[i];
+                <tr data-index="@i">
+                    <td>@item.Name</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.UnitPrice.ToString("F2")</td>
+                    <td class="itemTotal">@((item.Quantity * item.UnitPrice).ToString("F2"))</td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm deleteItemBtn">Delete</button>
+                    </td>
+
+                    <input type="hidden" data-index="@i" name="Items[@i].Id" value="@item.Id" />
+                    <input type="hidden" data-index="@i" name="Items[@i].Name" value="@item.Name" />
+                    <input type="hidden" data-index="@i" name="Items[@i].Quantity" value="@item.Quantity" />
+                    <input type="hidden" data-index="@i" name="Items[@i].UnitPrice" value="@item.UnitPrice" />
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3" class="text-end fw-bold">Grand Total</td>
+                <td id="grandTotal" class="fw-bold">0.00</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <button type="submit" class="btn btn-primary mt-3">Save Invoice</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        let itemIndex = @Model.Items.Count;
+        let grandTotal = 0;
+
+        function updateGrandTotal() {
+            let total = 0;
+            $("#itemsTable tbody tr").each(function () {
+                let value = parseFloat($(this).find("td:eq(3)").text());
+                if (!isNaN(value)) total += value;
+            });
+            grandTotal = total;
+            $("#grandTotal").text(grandTotal.toFixed(2));
+        }
+
+        updateGrandTotal();
+
+        $("#addItemBtn").click(function () {
+            let name = $("#itemName").val().trim();
+            let qty = parseInt($("#itemQuantity").val());
+            let price = parseFloat($("#itemPrice").val());
+
+            if (!name || isNaN(qty) || isNaN(price) || qty <= 0 || price <= 0) {
+                alert("Please enter valid item details");
+                return;
+            }
+
+            let total = qty * price;
+
+            $("#itemsTable tbody").append(`
+                <tr data-index="${itemIndex}">
+                    <td>${name}</td>
+                    <td>${qty}</td>
+                    <td>${price.toFixed(2)}</td>
+                    <td>${total.toFixed(2)}</td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm deleteItemBtn">Delete</button>
+                    </td>
+                </tr>
+            `);
+
+            $("#invoiceForm").append(`
+                <input type="hidden" data-index="${itemIndex}" name="Items[${itemIndex}].Id" value="0" />
+                <input type="hidden" data-index="${itemIndex}" name="Items[${itemIndex}].Name" value="${name}" />
+                <input type="hidden" data-index="${itemIndex}" name="Items[${itemIndex}].Quantity" value="${qty}" />
+                <input type="hidden" data-index="${itemIndex}" name="Items[${itemIndex}].UnitPrice" value="${price}" />
+            `);
+
+            itemIndex++;
+
+            $("#itemName").val("");
+            $("#itemQuantity").val("");
+            $("#itemPrice").val("");
+
+            updateGrandTotal();
+        });
+
+        $(document).on("click", ".deleteItemBtn", function () {
+            let row = $(this).closest("tr");
+            let index = row.data("index");
+
+            row.remove();
+            $(`#invoiceForm input[data-index='${index}']`).remove();
+
+            updateGrandTotal();
+        });
+    </script>
+}

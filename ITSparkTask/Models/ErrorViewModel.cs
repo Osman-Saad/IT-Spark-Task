@@ -1,4 +1,4 @@
-namespace ITSparkTask.Models
+namespace ITSparkTask.PL.Models
 {
     public class ErrorViewModel
     {

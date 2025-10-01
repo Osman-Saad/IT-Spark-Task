@@ -1,0 +1,10 @@
+﻿@model InvoiceViewModel
+@{
+    ViewData["Title"] = "Delete Invoice";
+}
+
+<h2>Delete Invoice @Model.Id</h2>
+<form method="post" asp-action="Delete" asp-asp-route-id="@Model.Id">
+    <partial name="_DetailsDeletePartialView" model="@Model" />
+    <input type="submit" class="btn btn-danger" value="Delete" />
+</form>
